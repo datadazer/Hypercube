@@ -11,45 +11,142 @@
   <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/96/three.js"></script>
     <script>
+      var edges = [];
+      var t = 0;
+      var vertices2 = [];
       var scene = new THREE.Scene();
-      var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+      scene.background = new THREE.Color( 0xffffff );
+      // var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+      var camera = new THREE.OrthographicCamera( window.innerWidth / - 80, window.innerWidth / 80, window.innerHeight / 80, window.innerHeight / - 80, 0.1, 1000 );
+      camera.position.set(-3,-1,2);
+      camera.lookAt(new THREE.Vector3(0,0,0));
 
       var renderer = new THREE.WebGLRenderer();
       renderer.setSize( window.innerWidth, window.innerHeight );
       document.body.appendChild( renderer.domElement );
       // var geometry = new THREE.BoxGeometry( 1, 1, 1 );
 
+      function path(p1, p2, p3, p4, i) {
+
+        let vec = new THREE.Vector3(0,0,0);
+
+        if (i >= 0 && i < 0.25) {
+          vec.x = p4.x + (p1.x - p4.x ) * i * 4;
+          vec.y = p4.y + (p1.y - p4.y ) * i * 4;
+          vec.z = p4.z + (p1.z - p4.z ) * i * 4;
+        } else if (i >= 0.25 && i < 0.5) {
+          vec.x = p1.x + (p2.x - p1.x ) * (i - 0.25) * 4;
+          vec.y = p1.y + (p2.y - p1.y ) * (i - 0.25) * 4;
+          vec.z = p1.z + (p2.z - p1.z ) * (i - 0.25) * 4;
+        } else if (i >= 0.5 && i < 0.75) {
+          vec.x = p2.x + (p3.x - p2.x ) * (i - 0.5) * 4;
+          vec.y = p2.y + (p3.y - p2.y ) * (i - 0.5) * 4;
+          vec.z = p2.z + (p3.z - p2.z ) * (i - 0.5) * 4;
+        } else if (i >= 0.75 && i < 1.0) {
+          vec.x = p3.x + (p4.x - p3.x ) * (i - 0.75) * 4;
+          vec.y = p3.y + (p4.y - p3.y ) * (i - 0.75) * 4;
+          vec.z = p3.z + (p4.z - p3.z ) * (i - 0.75) * 4;
+        }
+
+        return vec;
+      }
+
 
       var geometry = new THREE.Geometry();
-      geometry.vertices.push(
-        new THREE.Vector3(-1, 1, 1),
-        new THREE.Vector3(-1, -1, 1),
-        new THREE.Vector3(1, -1, 1),
-        new THREE.Vector3(1, 1, 1),
-        new THREE.Vector3(-1, 1, -1),
-        new THREE.Vector3(-1, -1, -1),
-        new THREE.Vector3(1, -1, -1),
-        new THREE.Vector3(1, 1, -1)
-      );
-      geometry.faces.push( new THREE.Face3(0, 1, 2));
-      geometry.faces.push( new THREE.Face3(0, 2, 3));
-      geometry.faces.push( new THREE.Face3(0, 4, 5));
-      geometry.faces.push( new THREE.Face3(0, 1, 5));
-      geometry.faces.push( new THREE.Face3(3, 6, 7));
-      geometry.faces.push( new THREE.Face3(5, 1, 2));
-      geometry.faces.push( new THREE.Face3(6, 3, 2));
+
+      let vertices = [];
+      vertices[0] = new THREE.Vector3(-1, -1, -1),
+      vertices[1] = new THREE.Vector3(1, -1, -1),
+      vertices[2] = new THREE.Vector3(1, 1, -1),
+      vertices[3] = new THREE.Vector3(-1, 1, -1),
+      vertices[4] = new THREE.Vector3(-1, -1, 1),
+      vertices[5] = new THREE.Vector3(1, -1, 1),
+      vertices[6] = new THREE.Vector3(1, 1, 1),
+      vertices[7] = new THREE.Vector3(-1, 1, 1),
+      vertices[8] = new THREE.Vector3(-2, -2, -2),
+      vertices[9] = new THREE.Vector3(2, -2, -2),
+      vertices[10] = new THREE.Vector3(2, 2, -2),
+      vertices[11] = new THREE.Vector3(-2, 2, -2),
+      vertices[12] = new THREE.Vector3(-2, -2, 2),
+      vertices[13] = new THREE.Vector3(2, -2, 2),
+      vertices[14] = new THREE.Vector3(2, 2, 2),
+      vertices[15] = new THREE.Vector3(-2, 2, 2),
 
 
+      vertexJoins = [
+        [0,1], [1,2], [2,3], [3,0],
+        [0,4], [1,5], [2,6], [3,7],
+        [4,5], [5,6], [6,7], [7,4],
 
-      var material = new THREE.MeshBasicMaterial( { color: 0x00ff0045, wireframe: true } );
-      var cube = new THREE.Mesh( geometry, material );
-      scene.add( cube );
+        [0,8], [1,9], [2,10], [3,11],
+        [4,12], [5,13], [6,14], [7,15],
 
-      camera.position.z = 5;
+        [8,9], [9,10], [10,11], [11,8],
+        [8,12], [9,13], [10,14], [11,15],
+        [12,13], [13,14], [14,15], [15,12]
+      ];
+
+      for (var i = 0; i < vertexJoins.length; i++) {
+
+        geometry = new THREE.Geometry();
+        geometry.vertices.push(vertices[vertexJoins[i][0]]);
+        geometry.vertices.push(vertices[vertexJoins[i][1]]);
+        var line = new THREE.Line(geometry, new THREE.LineBasicMaterial({
+          color: 0x000000,
+          linewidth: 4
+        }));
+        scene.add(line);
+        edges[i] = line;
+
+      }
+
+      // camera.position.z = 5;
+
+      var mouseDown = false;
+      document.body.onmousedown = function() { 
+          mouseDown = true;
+      }
+      document.body.onmouseup = function() {
+          mouseDown = false;
+      }
+
       function animate() {
+
+        t = (t + 0.002) % 1;
+
+        vertices2[0]  = path(vertices[8], vertices[9], vertices[1], vertices[0], t);
+        vertices2[1]  = path(vertices[0], vertices[8], vertices[9], vertices[1], t);
+        vertices2[9]  = path(vertices[1], vertices[0], vertices[8], vertices[9], t);
+        vertices2[8]  = path(vertices[9], vertices[1], vertices[0], vertices[8], t);
+
+        vertices2[3]  = path(vertices[11], vertices[10], vertices[2], vertices[3], t);
+        vertices2[2]  = path(vertices[3], vertices[11], vertices[10], vertices[2], t);
+        vertices2[10]  = path(vertices[2], vertices[3], vertices[11], vertices[10], t);
+        vertices2[11]  = path(vertices[10], vertices[2], vertices[3], vertices[11], t);
+
+        vertices2[4]  = path(vertices[12], vertices[13], vertices[5], vertices[4], t);
+        vertices2[5]  = path(vertices[4], vertices[12], vertices[13], vertices[5], t);
+        vertices2[13]  = path(vertices[5], vertices[4], vertices[12], vertices[13], t);
+        vertices2[12]  = path(vertices[13], vertices[5], vertices[4], vertices[12], t);
+
+        vertices2[7]  = path(vertices[15], vertices[14], vertices[6], vertices[7], t);
+        vertices2[6]  = path(vertices[7], vertices[15], vertices[14], vertices[6], t);
+        vertices2[14]  = path(vertices[6], vertices[7], vertices[15], vertices[14], t);
+        vertices2[15]  = path(vertices[14], vertices[6], vertices[7], vertices[15], t);
+
         requestAnimationFrame( animate );
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
+        if (mouseDown == 1) {
+          for (let i = 0; i < edges.length; i++) {
+
+            edges[i].geometry.vertices[0] = vertices2[vertexJoins[i][0]];
+            edges[i].geometry.vertices[1] = vertices2[vertexJoins[i][1]];
+            edges[i].rotation.x = 0;
+            edges[i].rotation.y = 0;
+            edges[i].rotation.z = 0;
+            edges[i].geometry.verticesNeedUpdate = true;
+          }
+        }
         renderer.render( scene, camera );
       }
       animate();
